@@ -172,9 +172,7 @@ class TestQuery(TestCase):
         Dummy.create(name='foo0', age=1)
         for d in Dummy.query:
             self.assertTrue(isinstance(d, Dummy))
-        l = []
-        for age in Dummy.query('age').order_by(Dummy.age.desc()):
-            l.append(age)
+        l = list(Dummy.query('age').order_by(Dummy.age.desc()))
         self.assertEqual(l, [4, 3, 2, 1])
 
     def test_update(self):

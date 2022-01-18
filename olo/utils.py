@@ -119,10 +119,11 @@ def type_checker(type_, obj):  # pylint: disable=too-many-return-statements
         if not items:
             return isinstance(obj, t)
         kt, vt = items[0]
-        for k, v in iteritems(obj):
-            if not type_checker(kt, k) or not type_checker(vt, v):
-                return False
-        return True
+        return not any(
+            not type_checker(kt, k) or not type_checker(vt, v)
+            for k, v in iteritems(obj)
+        )
+
     return False
 
 
@@ -144,9 +145,7 @@ def transform_type(obj, type_):  # pylint: disable=too-many-return-statements
             return obj.name
         return type_(obj)
     if type_ is unicode:
-        if isinstance(obj, str):  # pragma: no cover
-            return obj.decode('utf-8')  # pragma: no cover
-        return type_(obj)  # pragma: no cover
+        return obj.decode('utf-8') if isinstance(obj, str) else type_(obj)
     if type_ in (list, dict):
         if isinstance(obj, str_types):
             obj = json.loads(obj)
@@ -165,9 +164,7 @@ def transform_type(obj, type_):  # pylint: disable=too-many-return-statements
                 return obj
         return tuple(obj)
     if callable(type_):
-        if type_ is Decimal:
-            return type_(str(obj))
-        return type_(obj)
+        return type_(str(obj)) if type_ is Decimal else type_(obj)
     t = type(type_)
     if t in (list, dict) and isinstance(obj, str_types):
         obj = json.loads(obj)

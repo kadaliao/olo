@@ -64,17 +64,13 @@ def _process_order_by(model_class, order_by) -> List[UnaryExpression]:
                     item
                 ))
             item = f
-            if is_negative:
-                item = item.desc()
-            else:
-                item = item.asc()
+            item = item.desc() if is_negative else item.asc()
         elif isinstance(item, Field):
             item = item.asc()
-        else:
-            if not isinstance(item, UnaryExpression):
-                raise OrderByError('`{}` is an invalid order_by'.format(  # noqa pragma: no cover pylint: disable=W
-                    item
-                ))
+        elif not isinstance(item, UnaryExpression):
+            raise OrderByError('`{}` is an invalid order_by'.format(  # noqa pragma: no cover pylint: disable=W
+                item
+            ))
         new.append(item)
     return new
 
@@ -157,9 +153,8 @@ class JoinChain(SQLASTInterface):
             left_ast = ['TABLE', self.left._get_table_name()]
         else:
             left_ast = self.left.get_sql_ast()
-        on_ast = []
-        if self.on_:
-            on_ast = self.on_.get_sql_ast()
+        on_ast = self.on_.get_sql_ast() if self.on_ else []
+
         return ['JOIN', self.type.name, left_ast, ['TABLE', self.right._get_table_name()], on_ast]
 
     def clone(self) -> JoinChain:
@@ -263,9 +258,8 @@ class Query(SQLASTInterface):
                 )
             if start:
                 q = q.offset(start)
-            if stop is not None:
-                if start or stop != sys.maxsize:
-                    q = q.limit(stop - start)
+            if stop is not None and (start or stop != sys.maxsize):
+                q = q.limit(stop - start)
             return q.all()
         field = self._model_class.get_singleness_pk_field()
         return self.filter(field == item).first()
@@ -282,30 +276,26 @@ class Query(SQLASTInterface):
 
     @_lambda_eval
     def join(self, model_class):
-        left = self._model_class
-        if self._join_chain is not None:
-            left = self._join_chain
+        left = self._join_chain if self._join_chain is not None else self._model_class
+
         return self._update(_join_chain=JoinChain(JoinType.INNER, left, model_class))
 
     @_lambda_eval
     def left_join(self, model_class):
-        left = self._model_class
-        if self._join_chain is not None:
-            left = self._join_chain
+        left = self._join_chain if self._join_chain is not None else self._model_class
+
         return self._update(_join_chain=JoinChain(JoinType.LEFT, left, model_class))
 
     @_lambda_eval
     def right_join(self, model_class):
-        left = self._model_class
-        if self._join_chain is not None:
-            left = self._join_chain
+        left = self._join_chain if self._join_chain is not None else self._model_class
+
         return self._update(_join_chain=JoinChain(JoinType.RIGHT, left, model_class))
 
     @_lambda_eval
     def full_join(self, model_class):
-        left = self._model_class
-        if self._join_chain is not None:
-            left = self._join_chain
+        left = self._join_chain if self._join_chain is not None else self._model_class
+
         return self._update(_join_chain=JoinChain(JoinType.FULL, left, model_class))
 
     @_lambda_eval
@@ -596,9 +586,7 @@ class Query(SQLASTInterface):
         return sql_ast
 
     def _get_expression(self, is_having=False):
-        if is_having:
-            return self._having_expression
-        return self._expression
+        return self._having_expression if is_having else self._expression
 
     def _get_base_sql_ast(self, modifier=None, entities=None):
         entities = self._entities if entities is None else entities
@@ -608,11 +596,7 @@ class Query(SQLASTInterface):
         else:
             table_section = ['TABLE', self.table_name]
 
-        contains_distinct = False
-        for entity in entities:
-            if isinstance(entity, DISTINCT):
-                contains_distinct = True
-                break
+        contains_distinct = any(isinstance(entity, DISTINCT) for entity in entities)
 
         # FIXME(PG)
         if contains_distinct and self._order_by:
@@ -629,8 +613,7 @@ class Query(SQLASTInterface):
         if modifier is not None:
             select_ast = ['MODIFIER', modifier, select_ast]
 
-        sql_ast = ['SELECT', select_ast, ['FROM', table_section]]
-        return sql_ast
+        return ['SELECT', select_ast, ['FROM', table_section]]
 
     # pylint: disable=E0602
     def _iter_wrap_rv(self, rv):

@@ -98,7 +98,7 @@ class TestField(TestCase):
             ['COLUMN', 'foo', 'age'],
             ['VALUE', 1]
         ])
-        exp = Foo.age == None  # noqa
+        exp = Foo.age is None
         ast = exp.get_sql_ast()
         self.assertEqual(ast, [
             'BINARY_OPERATE',
@@ -391,7 +391,7 @@ class TestDbField(TestCase):
                     self.assertEqual(d.prop1, [str(d.id)])
 
                     # visit `count1` field multi times
-                    for j in xrange(5):
+                    for _ in xrange(5):
                         self.assertIsNone(d.count1)
 
                 self.assertEqual(db_get.call_count, 0)
@@ -411,8 +411,7 @@ class TestBatchField(TestCase):
             @a_bar.getter
             @classmethod
             def get_a_bars(cls, foos):
-                bars = Bar.gets([str(f.id) for f in foos])
-                return bars
+                return Bar.gets([str(f.id) for f in foos])
 
             @b_bar.getter
             @classmethod

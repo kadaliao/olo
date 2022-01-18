@@ -128,12 +128,11 @@ class BinaryExpression(Expression, BinaryOperationMixin):
         right_sql_ast = []
         if isinstance(self.right, SQLASTInterface):
             right_sql_ast = self.right.get_sql_ast()
+        elif self.operator in ('IN', 'NOT IN'):
+            if isinstance(self.right, (tuple, list)):
+                right_sql_ast = ['VALUE', tuple(tuple(x) if isinstance(x, list) else x for x in self.right)]
         else:
-            if self.operator in ('IN', 'NOT IN'):
-                if isinstance(self.right, (tuple, list)):
-                    right_sql_ast = ['VALUE', tuple(tuple(x) if isinstance(x, list) else x for x in self.right)]
-            else:
-                right_sql_ast = ['VALUE', self.right]
+            right_sql_ast = ['VALUE', self.right]
 
         return sql_ast + [left_sql_ast] + [right_sql_ast]
 

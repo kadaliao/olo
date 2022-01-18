@@ -52,13 +52,12 @@ def get_globals_and_locals(args, kwargs, frame_depth, from_generator=False):
                 'The first positional argument must be generator expression or'
                 ' its text source. Got: %r' % func
             )
-    else:
-        if not isinstance(func, str_types + (types.FunctionType,)):
-            throw(
-                TypeError,
-                'The first positional argument must be lambda function or'
-                ' its text source. Got: %r' % func
-            )
+    elif not isinstance(func, str_types + (types.FunctionType,)):
+        throw(
+            TypeError,
+            'The first positional argument must be lambda function or'
+            ' its text source. Got: %r' % func
+        )
     if args_len > 1:
         globals = args[1]
         if not hasattr(globals, 'keys'):

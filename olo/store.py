@@ -12,7 +12,7 @@ def is_under_thread():
 class ThreadSafeStore(object):
     modified_cursor_q = Queue()
 
-    def __init__(self, store, timeout=60 * 60, queue_size=16):
+    def __init__(self, store, timeout = 60**2, queue_size=16):
         self.lock = threading.RLock()
         self.store = store
         self.timeout = timeout

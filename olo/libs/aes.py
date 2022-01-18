@@ -16,7 +16,7 @@ def pad(s):
 
 def unpad(s):
     s = to_str(s)
-    return s[0: -ord(s[-1])]
+    return s[:-ord(s[-1])]
 
 
 def encrypt(plain_text, key):
@@ -33,8 +33,7 @@ def decrypt(cipher_text, key):
         return cipher_text
     cipher_text = to_bytes(cipher_text)
     decrypted = base64.b64decode(cipher_text)
-    result = unpad(cipher.decrypt(decrypted))
-    return result
+    return unpad(cipher.decrypt(decrypted))
 
 
 def generate_aes_key(length=32):

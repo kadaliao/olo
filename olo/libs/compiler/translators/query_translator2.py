@@ -94,10 +94,7 @@ class QueryTranslator(ASTTranslator):
         def f():
             q = None
             for qual in node.quals:
-                if q is None:
-                    q = qual.factory()
-                else:
-                    q = q.flat_map(qual.factory())
+                q = qual.factory() if q is None else q.flat_map(qual.factory())
             entities = node.expr.factory()
             if not isinstance(entities, (list, tuple)):
                 entities = (entities,)
@@ -228,13 +225,10 @@ class QueryTranslator(ASTTranslator):
             node.priority = 2
             args = [arg.factory() for arg in node.args]
 
-            kwargs = {}
-
             if node.star_args:
                 args += node.star_args.factory()
 
-            if node.dstar_args:
-                kwargs = node.dstar_args.factory()
+            kwargs = node.dstar_args.factory() if node.dstar_args else {}
 
             return node.node.factory()(*args, **kwargs)
 
@@ -259,9 +253,7 @@ class QueryTranslator(ASTTranslator):
             lower = node.lower.factory() if node.lower is not None else None
             upper = node.upper.factory() if node.upper is not None else None
             if lower is not None:
-                if upper is not None:
-                    return lambda: v[lower: upper]
-                return v[lower:]
+                return (lambda: v[lower: upper]) if upper is not None else v[lower:]
             if upper is not None:
                 return lambda: v[:upper]
 
@@ -285,11 +277,11 @@ class QueryTranslator(ASTTranslator):
 
     def postTuple(self, node):
         node.priority = 1
-        return lambda: tuple([item.factory() for item in node.nodes])
+        return lambda: tuple(item.factory() for item in node.nodes)
 
     def postAssTuple(self, node):
         node.priority = 1
-        return lambda: tuple([item.factory() for item in node.nodes])
+        return lambda: tuple(item.factory() for item in node.nodes)
 
     def postDict(self, node):
         node.priority = 1

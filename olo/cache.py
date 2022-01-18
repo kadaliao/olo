@@ -47,9 +47,7 @@ def _order_by_to_str(item):
 
 
 def order_by_to_strs(order_by):
-    res = []
-    for exp in order_by:
-        res.append(_order_by_to_str(exp))
+    res = [_order_by_to_str(exp) for exp in order_by]
     if not res:
         return None
     return tuple(res)
@@ -364,8 +362,7 @@ def get_str_key(keys):
 
 
 def get_unique_keys(cls_or_obj):
-    keys = set()
-    keys.add(cls_or_obj.__primary_key__)
+    keys = {cls_or_obj.__primary_key__}
     keys.update(cls_or_obj.__unique_keys__)
     return keys
 
@@ -413,11 +410,12 @@ def delete_cache(sender):
         return
     keys = set(get_cache_keys(sender))
     if sender._orig and sender.__primary_key__:
-        dirty_fields = set()
+        dirty_fields = {
+            name
+            for name in sender.__fields__
+            if getattr(sender, name) != getattr(sender._orig, name)
+        }
 
-        for name in sender.__fields__:
-            if getattr(sender, name) != getattr(sender._orig, name):
-                dirty_fields.add(name)
 
         _keys = set(get_cache_keys(sender._orig))
         inter_keys = keys.intersection(_keys)

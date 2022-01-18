@@ -213,15 +213,13 @@ class PythonTranslator(ASTTranslator):
         node.priority = 2
         if len(node.subs) == 1:
             sub = node.subs[0]
+            key = sub.src
             if (
                     isinstance(sub, ast.Const) and
                     type(sub.value) is tuple and len(sub.value) > 1
             ):
-                key = sub.src
                 assert key.startswith('(') and key.endswith(')')
                 key = key[1:-1]
-            else:
-                key = sub.src
         else:
             key = ', '.join([sub.src for sub in node.subs])
         return '%s[%s]' % (node.expr.src, key)

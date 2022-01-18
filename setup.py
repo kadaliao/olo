@@ -31,10 +31,7 @@ try:
 except ImportError:
     logger.warn('No cython for optimize!!!')
 
-install_requires = []
-for line in open('requirements.txt', 'r'):
-    install_requires.append(line.strip())
-
+install_requires = [line.strip() for line in open('requirements.txt', 'r')]
 setup(
     name='olo',
     version='0.4.0',

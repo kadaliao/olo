@@ -189,9 +189,4 @@ class Queue:
 
     # Get an item from the queue
     def _get(self):
-        if self.use_lifo:
-            # LIFO
-            return self.queue.pop()
-        else:
-            # FIFO
-            return self.queue.popleft()
+        return self.queue.pop() if self.use_lifo else self.queue.popleft()

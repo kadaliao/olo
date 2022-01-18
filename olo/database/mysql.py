@@ -111,14 +111,7 @@ class CursorProxy(ClassProxy):
 
 
 class MySQLDataBase(BaseDataBase):
-    def __init__(self, host, port, user, password, dbname,
-                 charset='utf8mb4',
-                 beansdb=None, autocommit=True,
-                 report=lambda *args, **kwargs: None,
-                 pool_size=5,
-                 pool_timeout=30,
-                 pool_recycle=60*60,
-                 pool_max_overflow=10):
+    def __init__(self, host, port, user, password, dbname, charset='utf8mb4', beansdb=None, autocommit=True, report=lambda *args, **kwargs: None, pool_size=5, pool_timeout=30, pool_recycle = 60**2, pool_max_overflow=10):
 
         super(MySQLDataBase, self).__init__(
             beansdb=beansdb,

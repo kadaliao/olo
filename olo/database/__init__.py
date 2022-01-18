@@ -217,10 +217,7 @@ class BaseDataBase(object):
                         continue
                     type_ = (m.group('type') or '').lower()
                     len_ = m.group('len')
-                    if not len_:
-                        f_len = None
-                    else:
-                        f_len = int(len_)
+                    f_len = None if not len_ else int(len_)
                     f_type = str
                     if type_ in ('int', 'smallint', 'tinyint'):
                         f_type = int

@@ -40,15 +40,13 @@ class BinaryOperationMixin(object):
         return self.BinaryExpression(self, other, '%')
 
     def __eq__(self, other):
-        operator = '='
-        if other is None:
-            operator = 'IS'
+        operator = 'IS' if other is None else '='
+
         return self.BinaryExpression(self, other, operator)
 
     def __ne__(self, other):
-        operator = '!='
-        if other is None:
-            operator = 'IS NOT'
+        operator = 'IS NOT' if other is None else '!='
+
         return self.BinaryExpression(self, other, operator)
 
     def __gt__(self, other):
