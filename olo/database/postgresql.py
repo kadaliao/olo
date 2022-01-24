@@ -47,14 +47,7 @@ class PostgreSQLConnProxy(MySQLConnProxy):
 class PostgreSQLDataBase(BaseDataBase):
     ast_translator = PostgresSQLSQLASTTranslator()
 
-    def __init__(self, host, port, user, password, dbname,
-                 charset='utf8mb4',
-                 beansdb=None, autocommit=True,
-                 report=lambda *args, **kwargs: None,
-                 pool_size=5,
-                 pool_timeout=30,
-                 pool_recycle=60 * 60,
-                 pool_max_overflow=10):
+    def __init__(self, host, port, user, password, dbname, charset='utf8mb4', beansdb=None, autocommit=True, report=lambda *args, **kwargs: None, pool_size=5, pool_timeout=30, pool_recycle = 60**2, pool_max_overflow=10):
 
         super().__init__(
             beansdb=beansdb,
@@ -105,9 +98,7 @@ class PostgreSQLDataBase(BaseDataBase):
                 c.execute('SELECT column_name, data_type, character_maximum_length FROM information_schema.COLUMNS '
                           'WHERE table_name = %s', (table_name,))
                 for c_name, data_type, data_length in c:
-                    f_type = str
-                    if data_type in ('integer', 'smallint'):
-                        f_type = int
+                    f_type = int if data_type in ('integer', 'smallint') else str
                     fields.append((c_name, f_type, data_length))
         except Exception as e:  # pragma: no cover
             logger.error('get fields from %s failed: %s', table_name, str(e))

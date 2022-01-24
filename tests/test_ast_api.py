@@ -12,7 +12,7 @@ class TestASTAPI(TestCase):
         self.assertEqual(ast1, ast2)
 
     def test_no_condition(self):
-        q1 = select(f for f in Foo)
+        q1 = select(iter(Foo))
         q2 = Foo.query
         self.is_same_q(q1, q2)
 

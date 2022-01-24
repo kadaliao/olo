@@ -64,22 +64,11 @@ def _product_index_keys(key):
     if len(key) == 0:
         yield StrKey()
     for i in xrange(1, len(key) + 1):
-        yield StrKey(key[0: i])
+        yield StrKey(key[:i])
 
 
 class ModelOptions(object):
-    def __init__(self, db=None, cache_client=None,
-                 cache_key_prefix='olo', cache_expire=60 * 60 * 24,
-                 enable_log=False, db_field_version=1,
-                 cache_key_version='v0.1.1',
-                 query_class=Query,
-                 cached_query_class=CachedQuery,
-                 cache_class=CacheWrapper,
-                 auto_use_cache=False,
-                 report=None,
-                 table_engine=None,
-                 table_charset=None,
-                 **kwargs):
+    def __init__(self, db=None, cache_client=None, cache_key_prefix='olo', cache_expire = 60**2 * 24, enable_log=False, db_field_version=1, cache_key_version='v0.1.1', query_class=Query, cached_query_class=CachedQuery, cache_class=CacheWrapper, auto_use_cache=False, report=None, table_engine=None, table_charset=None, **kwargs):
         assert db_field_version in (0, 1)
         if db:
             db.enable_log = enable_log
@@ -296,13 +285,10 @@ class ModelMeta(type):
     _finals = set()
 
     def __new__(mcs, class_name, bases, attrs):
-        finals = []
-        for k, v in iteritems(attrs):
-            if (
+        finals = [k for k, v in iteritems(attrs) if (
                 k in mcs._finals and
                 not getattr(v, '_override', False)
-            ):
-                finals.append(k)
+            )]
         if finals:
             raise RuntimeError(
                 'Class `{}` override some final attrs: {}. '

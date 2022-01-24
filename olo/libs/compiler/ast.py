@@ -32,8 +32,7 @@ class Node:
         pass  # implemented by subclasses
 
     def __iter__(self):
-        for n in self.getChildren():
-            yield n
+        yield from self.getChildren()
 
     def asList(self):  # for backwards compatibility
         return self.getChildren()
@@ -171,14 +170,11 @@ class Assert(Node):
         self.lineno = lineno
 
     def getChildren(self):
-        children = []
-        children.append(self.test)
-        children.append(self.fail)
+        children = [self.test, self.fail]
         return tuple(children)
 
     def getChildNodes(self):
-        nodelist = []
-        nodelist.append(self.test)
+        nodelist = [self.test]
         if self.fail is not None:
             nodelist.append(self.fail)
         return tuple(nodelist)
@@ -318,16 +314,14 @@ class CallFunc(Node):
         self.lineno = lineno
 
     def getChildren(self):
-        children = []
-        children.append(self.node)
+        children = [self.node]
         children.extend(flatten(self.args))
         children.append(self.star_args)
         children.append(self.dstar_args)
         return tuple(children)
 
     def getChildNodes(self):
-        nodelist = []
-        nodelist.append(self.node)
+        nodelist = [self.node]
         nodelist.extend(flatten_nodes(self.args))
         if self.star_args is not None:
             nodelist.append(self.star_args)
@@ -352,8 +346,7 @@ class Class(Node):
         self.lineno = lineno
 
     def getChildren(self):
-        children = []
-        children.append(self.name)
+        children = [self.name]
         children.extend(flatten(self.bases))
         children.append(self.doc)
         children.append(self.code)
@@ -381,14 +374,12 @@ class Compare(Node):
         self.lineno = lineno
 
     def getChildren(self):
-        children = []
-        children.append(self.expr)
+        children = [self.expr]
         children.extend(flatten(self.ops))
         return tuple(children)
 
     def getChildNodes(self):
-        nodelist = []
-        nodelist.append(self.expr)
+        nodelist = [self.expr]
         nodelist.extend(flatten_nodes(self.ops))
         return tuple(nodelist)
 
@@ -512,15 +503,11 @@ class Exec(Node):
         self.lineno = lineno
 
     def getChildren(self):
-        children = []
-        children.append(self.expr)
-        children.append(self.locals)
-        children.append(self.globals)
+        children = [self.expr, self.locals, self.globals]
         return tuple(children)
 
     def getChildNodes(self):
-        nodelist = []
-        nodelist.append(self.expr)
+        nodelist = [self.expr]
         if self.locals is not None:
             nodelist.append(self.locals)
         if self.globals is not None:
@@ -557,18 +544,11 @@ class For(Node):
         self.lineno = lineno
 
     def getChildren(self):
-        children = []
-        children.append(self.assign)
-        children.append(self.list)
-        children.append(self.body)
-        children.append(self.else_)
+        children = [self.assign, self.list, self.body, self.else_]
         return tuple(children)
 
     def getChildNodes(self):
-        nodelist = []
-        nodelist.append(self.assign)
-        nodelist.append(self.list)
-        nodelist.append(self.body)
+        nodelist = [self.assign, self.list, self.body]
         if self.else_ is not None:
             nodelist.append(self.else_)
         return tuple(nodelist)
@@ -615,10 +595,7 @@ class Function(Node):
             self.kwargs = 1
 
     def getChildren(self):
-        children = []
-        children.append(self.decorators)
-        children.append(self.name)
-        children.append(self.argnames)
+        children = [self.decorators, self.name, self.argnames]
         children.extend(flatten(self.defaults))
         children.append(self.flags)
         children.append(self.doc)
@@ -666,16 +643,12 @@ class GenExprFor(Node):
         self.is_outmost = False
 
     def getChildren(self):
-        children = []
-        children.append(self.assign)
-        children.append(self.iter)
+        children = [self.assign, self.iter]
         children.extend(flatten(self.ifs))
         return tuple(children)
 
     def getChildNodes(self):
-        nodelist = []
-        nodelist.append(self.assign)
-        nodelist.append(self.iter)
+        nodelist = [self.assign, self.iter]
         nodelist.extend(flatten_nodes(self.ifs))
         return tuple(nodelist)
 
@@ -706,14 +679,12 @@ class GenExprInner(Node):
         self.lineno = lineno
 
     def getChildren(self):
-        children = []
-        children.append(self.expr)
+        children = [self.expr]
         children.extend(flatten(self.quals))
         return tuple(children)
 
     def getChildNodes(self):
-        nodelist = []
-        nodelist.append(self.expr)
+        nodelist = [self.expr]
         nodelist.extend(flatten_nodes(self.quals))
         return tuple(nodelist)
 
@@ -853,8 +824,7 @@ class Lambda(Node):
             self.kwargs = 1
 
     def getChildren(self):
-        children = []
-        children.append(self.argnames)
+        children = [self.argnames]
         children.extend(flatten(self.defaults))
         children.append(self.flags)
         children.append(self.code)
@@ -912,14 +882,12 @@ class ListComp(Node):
         self.lineno = lineno
 
     def getChildren(self):
-        children = []
-        children.append(self.expr)
+        children = [self.expr]
         children.extend(flatten(self.quals))
         return tuple(children)
 
     def getChildNodes(self):
-        nodelist = []
-        nodelist.append(self.expr)
+        nodelist = [self.expr]
         nodelist.extend(flatten_nodes(self.quals))
         return tuple(nodelist)
 
@@ -935,16 +903,12 @@ class ListCompFor(Node):
         self.lineno = lineno
 
     def getChildren(self):
-        children = []
-        children.append(self.assign)
-        children.append(self.list)
+        children = [self.assign, self.list]
         children.extend(flatten(self.ifs))
         return tuple(children)
 
     def getChildNodes(self):
-        nodelist = []
-        nodelist.append(self.assign)
-        nodelist.append(self.list)
+        nodelist = [self.assign, self.list]
         nodelist.extend(flatten_nodes(self.ifs))
         return tuple(nodelist)
 
@@ -975,14 +939,12 @@ class SetComp(Node):
         self.lineno = lineno
 
     def getChildren(self):
-        children = []
-        children.append(self.expr)
+        children = [self.expr]
         children.extend(flatten(self.quals))
         return tuple(children)
 
     def getChildNodes(self):
-        nodelist = []
-        nodelist.append(self.expr)
+        nodelist = [self.expr]
         nodelist.extend(flatten_nodes(self.quals))
         return tuple(nodelist)
 
@@ -998,16 +960,12 @@ class DictComp(Node):
         self.lineno = lineno
 
     def getChildren(self):
-        children = []
-        children.append(self.key)
-        children.append(self.value)
+        children = [self.key, self.value]
         children.extend(flatten(self.quals))
         return tuple(children)
 
     def getChildNodes(self):
-        nodelist = []
-        nodelist.append(self.key)
-        nodelist.append(self.value)
+        nodelist = [self.key, self.value]
         nodelist.extend(flatten_nodes(self.quals))
         return tuple(nodelist)
 
@@ -1195,10 +1153,7 @@ class Raise(Node):
         self.lineno = lineno
 
     def getChildren(self):
-        children = []
-        children.append(self.expr1)
-        children.append(self.expr2)
-        children.append(self.expr3)
+        children = [self.expr1, self.expr2, self.expr3]
         return tuple(children)
 
     def getChildNodes(self):
@@ -1273,16 +1228,11 @@ class Slice(Node):
         self.lineno = lineno
 
     def getChildren(self):
-        children = []
-        children.append(self.expr)
-        children.append(self.flags)
-        children.append(self.lower)
-        children.append(self.upper)
+        children = [self.expr, self.flags, self.lower, self.upper]
         return tuple(children)
 
     def getChildNodes(self):
-        nodelist = []
-        nodelist.append(self.expr)
+        nodelist = [self.expr]
         if self.lower is not None:
             nodelist.append(self.lower)
         if self.upper is not None:
@@ -1352,15 +1302,12 @@ class Subscript(Node):
         self.lineno = lineno
 
     def getChildren(self):
-        children = []
-        children.append(self.expr)
-        children.append(self.flags)
+        children = [self.expr, self.flags]
         children.extend(flatten(self.subs))
         return tuple(children)
 
     def getChildNodes(self):
-        nodelist = []
-        nodelist.append(self.expr)
+        nodelist = [self.expr]
         nodelist.extend(flatten_nodes(self.subs))
         return tuple(nodelist)
 
@@ -1377,15 +1324,13 @@ class TryExcept(Node):
         self.lineno = lineno
 
     def getChildren(self):
-        children = []
-        children.append(self.body)
+        children = [self.body]
         children.extend(flatten(self.handlers))
         children.append(self.else_)
         return tuple(children)
 
     def getChildNodes(self):
-        nodelist = []
-        nodelist.append(self.body)
+        nodelist = [self.body]
         nodelist.extend(flatten_nodes(self.handlers))
         if self.else_ is not None:
             nodelist.append(self.else_)
@@ -1467,16 +1412,11 @@ class While(Node):
         self.lineno = lineno
 
     def getChildren(self):
-        children = []
-        children.append(self.test)
-        children.append(self.body)
-        children.append(self.else_)
+        children = [self.test, self.body, self.else_]
         return tuple(children)
 
     def getChildNodes(self):
-        nodelist = []
-        nodelist.append(self.test)
-        nodelist.append(self.body)
+        nodelist = [self.test, self.body]
         if self.else_ is not None:
             nodelist.append(self.else_)
         return tuple(nodelist)
@@ -1494,15 +1434,11 @@ class With(Node):
         self.lineno = lineno
 
     def getChildren(self):
-        children = []
-        children.append(self.expr)
-        children.append(self.vars)
-        children.append(self.body)
+        children = [self.expr, self.vars, self.body]
         return tuple(children)
 
     def getChildNodes(self):
-        nodelist = []
-        nodelist.append(self.expr)
+        nodelist = [self.expr]
         if self.vars is not None:
             nodelist.append(self.vars)
         nodelist.append(self.body)

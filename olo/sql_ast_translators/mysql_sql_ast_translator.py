@@ -197,11 +197,10 @@ class MySQLSQLASTTranslator(SQLASTTranslator):
         return ' OR '.join(sql_pieces), params
 
     def post_IF(self, test_ast, then_ast, else_ast):
-        params = []
-        sql_pieces = ['CASE WHEN']
         test_sql_piece, test_params = self.translate(test_ast)
+        params = []
         params.extend(test_params)
-        sql_pieces.append(test_sql_piece)
+        sql_pieces = ['CASE WHEN', test_sql_piece]
         then_sql_piece, then_params = self.translate(then_ast)
         params.extend(then_params)
         sql_pieces.append('THEN')
@@ -287,20 +286,16 @@ class MySQLSQLASTTranslator(SQLASTTranslator):
     def post_FIELD_TYPE(self, type_, length, auto_increment):
         # pylint: disable=too-many-statements
         if type_ in (int, long):
-            if length is not None:
-                if length < 2:
-                    f_type = 'TINYINT({})'.format(length)  # pragma: no cover
-                elif length < 8:
-                    f_type = 'SMALLINT({})'.format(length)
-                else:
-                    f_type = 'INT({})'.format(length)
-            else:
+            if length is None:
                 f_type = 'BIGINT'
-        elif type_ in (str, unicode):
-            if length is not None:
-                f_type = 'VARCHAR({})'.format(length)
+            elif length < 2:
+                f_type = 'TINYINT({})'.format(length)  # pragma: no cover
+            elif length < 8:
+                f_type = 'SMALLINT({})'.format(length)
             else:
-                f_type = 'TEXT'  # pragma: no cover
+                f_type = 'INT({})'.format(length)
+        elif type_ in (str, unicode):
+            f_type = 'VARCHAR({})'.format(length) if length is not None else 'TEXT'
         elif type_ is float:
             f_type = 'FLOAT'  # pragma: no cover
         elif type_ is Decimal:
@@ -327,19 +322,16 @@ class MySQLSQLASTTranslator(SQLASTTranslator):
                 'BLOB', 'GEOMETRY'
         ):
             if not callable(default):
-                if default is not None or noneable:
-                    if default is not None:
-                        f_default = '%s'
-                        if f_type == 'JSONB':
-                            f_default = '%s::jsonb'
-                        if f_type in ('TEXT', 'JSONB'):
-                            params.append(json.dumps(default))
-                        elif isinstance(default, Enum):
-                            params.append(default.name)
-                        else:
-                            params.append(default)
+                if default is not None:
+                    f_default = '%s::jsonb' if f_type == 'JSONB' else '%s'
+                    if f_type in ('TEXT', 'JSONB'):
+                        params.append(json.dumps(default))
+                    elif isinstance(default, Enum):
+                        params.append(default.name)
                     else:
-                        f_default = 'NULL'
+                        params.append(default)
+                elif noneable:
+                    f_default = 'NULL'
             elif default == datetime.now:
                 f_default = 'CURRENT_TIMESTAMP'
 

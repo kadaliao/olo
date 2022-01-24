@@ -18,13 +18,9 @@ class LRUCache(object):
     def set(self, key, val):
         if key in self.cache:
             val = self.cache.pop(key)
-            self.cache[key] = val
-        else:
-            if len(self.cache) == self.size:
-                self.cache.popitem(last=False)
-                self.cache[key] = val
-            else:
-                self.cache[key] = val
+        elif len(self.cache) == self.size:
+            self.cache.popitem(last=False)
+        self.cache[key] = val
 
 
 class LocalCache(object):

@@ -21,9 +21,7 @@ def log(s):
 
 
 def iteritems(v):
-    if hasattr(v, 'iteritems'):
-        return v.iteritems()
-    return v.items()
+    return v.iteritems() if hasattr(v, 'iteritems') else v.items()
 
 
 def falsefunc(*a, **kw):
@@ -330,7 +328,7 @@ class BeansDBProxy(object):
                     self.servers = self.servers[i:] + self.servers[:i]
                 return True
             else:
-                values = dict((k, values[k]) for k in failures)
+                values = {k: values[k] for k in failures}
         if failures:
             raise WriteFailedError(failures)
 
@@ -384,7 +382,7 @@ class CacheWrapper(object):
 
         self.delay_cleaner = delay_cleaner
         self.none_cache = SetStub()
-        self.expire_of_mc = expire_of_mc if expire_of_mc else ONE_DAY
+        self.expire_of_mc = expire_of_mc or ONE_DAY
 
     def __getstate__(self):
         odict = self.__dict__.copy()
@@ -456,15 +454,14 @@ class CacheWrapper(object):
         r = self.mc.get(key)
         if r is not None:
             return r
+        # key is not in mc
+        value = self.db.get(key)
+        if value is not None:
+            self.mc.set(key, value, time=self.expire_of_mc)
         else:
-            # key is not in mc
-            value = self.db.get(key)
-            if value is not None:
-                self.mc.set(key, value, time=self.expire_of_mc)
-            else:
-                value = empty_slot
-                self.mc.add(key, value, time=self.expire_of_mc)
-            return value
+            value = empty_slot
+            self.mc.add(key, value, time=self.expire_of_mc)
+        return value
 
     def get(self, key, default=None):
         """
@@ -476,15 +473,14 @@ class CacheWrapper(object):
         r = self.mc.get(key)
         if r is not None:
             return r
+        # key is not in none_cache or mc
+        value = self.db.get(key)
+        if value is not None:
+            self.mc.set(key, value, time=self.expire_of_mc)
         else:
-            # key is not in none_cache or mc
-            value = self.db.get(key)
-            if value is not None:
-                self.mc.set(key, value, time=self.expire_of_mc)
-            else:
-                value = default
-                self.none_cache.add(key)
-            return value
+            value = default
+            self.none_cache.add(key)
+        return value
 
     def exists(self, key):
         """
@@ -496,11 +492,10 @@ class CacheWrapper(object):
         r = self.mc.get(key)
         if r is not None:
             return True
-        else:
-            db_exist = self.db.exists(key)
-            if not db_exist:
-                self.none_cache.add(key)
-            return db_exist
+        db_exist = self.db.exists(key)
+        if not db_exist:
+            self.none_cache.add(key)
+        return db_exist
 
     def mc_prefetch(self, keys):
         return self.mc.get_multi(keys)
@@ -514,7 +509,7 @@ class CacheWrapper(object):
         if not non_cache_keys:
             return {} if default is None else dict.fromkeys(keys, default)
         r = self.mc.get_multi(list(non_cache_keys))
-        rs = dict((k, v) for k, v in iteritems(r) if v is not None)
+        rs = {k: v for k, v in iteritems(r) if v is not None}
         non_exist_keys = non_cache_keys.difference(rs)
 
         if non_exist_keys:

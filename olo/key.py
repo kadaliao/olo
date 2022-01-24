@@ -13,9 +13,7 @@ class Key(tuple):
         raise NotImplementedError
 
     def __eq__(self, other):
-        if isinstance(other, Key):
-            return hash(self) == hash(other)
-        return False  # pragma: no cover
+        return hash(self) == hash(other) if isinstance(other, Key) else False
 
     def __ne__(self, other):
         return not self.__eq__(other)  # pragma: no cover

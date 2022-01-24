@@ -93,12 +93,11 @@ class Function(
         return inst
 
     def _get_sql_ast(self):
-        sql_ast = [
+        return [
             'CALL',
             self.__class__.__name__.upper()
         ] + [arg.get_sql_ast() if isinstance(arg, SQLASTInterface) else arg
              for arg in self.args]
-        return sql_ast
 
     def get_sql_ast(self):
         sql_ast = self._get_sql_ast()

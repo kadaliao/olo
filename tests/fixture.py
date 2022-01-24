@@ -19,9 +19,8 @@ in_travis = os.environ.get('ENV') == 'travis'
 
 
 is_pg = os.getenv('DB') == 'pg'
-SCHEMA_FILE = 'schema.sql'
-if is_pg:
-    SCHEMA_FILE = 'schema_pg.sql'
+SCHEMA_FILE = 'schema_pg.sql' if is_pg else 'schema.sql'
+
 BEANSDB_CFG = {
     'localhost:11211': range(16),
 }
@@ -99,8 +98,8 @@ def setup_mysql_conn():
     if mysql_conn is not None:
         mysql_conn.close()
 
-    mysql_conn = get_mysql_conn()
     if not is_pg:
+        mysql_conn = get_mysql_conn()
         cur = mysql_conn.cursor()
         cur.execute('SET GLOBAL sql_mode = ""')
         mysql_conn.commit()

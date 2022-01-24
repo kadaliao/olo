@@ -80,16 +80,7 @@ class ConnProxy(object):
 
 
 class Pool(object):
-    def __init__(self,
-                 creator,
-                 size=5,
-                 max_overflow=10,
-                 timeout=30,
-                 recycle=60 * 60,
-                 tick_time=0.01,
-                 conn_proxy_cls=ConnProxy,
-                 use_lifo=False,
-                 enable_log=False):
+    def __init__(self, creator, size=5, max_overflow=10, timeout=30, recycle = 60**2, tick_time=0.01, conn_proxy_cls=ConnProxy, use_lifo=False, enable_log=False):
         self._creator = creator
         self._pool = Queue(size, use_lifo=use_lifo)
         self._overflow = 0 - size
@@ -146,7 +137,7 @@ class Pool(object):
         while True:
             conn = self._do_acquire_conn()
             if conn is None:
-                raise Exception(f'cannot connect to the database!!!')
+                raise Exception('cannot connect to the database!!!')
             if conn.is_expired or conn.is_closed or not self.ping_conn(conn):
                 try:
                     self.destroy_conn(conn)
@@ -176,13 +167,12 @@ class Pool(object):
                     'connection timed out, timeout {}'.format(self.size, self._overflow, self._timeout),
                     )
 
-        if self._inc_overflow():
-            try:
-                return self._create_conn()
-            except Exception:
-                self._dec_overflow()
-        else:
+        if not self._inc_overflow():
             return self._do_acquire_conn()
+        try:
+            return self._create_conn()
+        except Exception:
+            self._dec_overflow()
 
     def ping_conn(self, conn):
         try:

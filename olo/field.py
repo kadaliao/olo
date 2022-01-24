@@ -342,9 +342,8 @@ class JSONField(Field):
     def __ne__(self, other):
         inst = self.clone()
         inst._type = _get_json_type(other)
-        operator = '!='
-        if other is None:
-            operator = 'IS NOT'
+        operator = 'IS NOT' if other is None else '!='
+
         return self.BinaryExpression(inst, other, operator)
 
     def __gt__(self, other):
@@ -475,10 +474,7 @@ def _get_db_values(pairs):
     res = []
     for obj, field, version in pairs:
         key = mapping.get((obj._olo_get_signature(), field.name, version))
-        if not key:
-            value = missing  # pragma: no cover
-        else:
-            value = values.get(key, missing)
+        value = missing if not key else values.get(key, missing)
         res.append(value)
     return res
 
@@ -647,11 +643,7 @@ class BatchField(BaseField):
             raise AttributeError('batch field `{}.{}` has no getter!', owner.__name__, self.name)
 
         session = instance._olo_qs
-        if session is None:
-            entities = [instance]  # pragma: no cover
-        else:
-            entities = session.entities
-
+        entities = [instance] if session is None else session.entities
         name = self.name
         default = self.get_default()
         res = self._getter(owner, entities)

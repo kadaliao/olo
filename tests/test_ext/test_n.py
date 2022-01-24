@@ -20,8 +20,7 @@ class TestN(TestCase):
 
             @n
             def a_bars(cls, foos):
-                bars = Bar.gets([str(f.id) for f in foos])
-                return bars
+                return Bar.gets([str(f.id) for f in foos])
 
             @n
             def b_bars(cls, foos):
@@ -33,16 +32,14 @@ class TestN(TestCase):
 
             @n(1)
             def c_bars(cls, foos):
-                bars = Bar.gets([str(f.id) for f in foos])
-                return bars
+                return Bar.gets([str(f.id) for f in foos])
 
             d_bars = prefetch_factory(Bar, default=1)
 
             @n
             @classmethod
             def f_bars(cls, foos):
-                bars = Bar.gets([str(f.id) for f in foos])
-                return bars
+                return Bar.gets([str(f.id) for f in foos])
 
         Foo.create(age=1)
         Foo.create(age=2)

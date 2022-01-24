@@ -36,9 +36,8 @@ def decompile(x):
         if PY2:
             if x.func_closure:
                 cells = dict(izip(codeobject.co_freevars, x.func_closure))
-        else:
-            if x.__closure__:
-                cells = dict(izip(codeobject.co_freevars, x.__closure__))
+        elif x.__closure__:
+            cells = dict(izip(codeobject.co_freevars, x.__closure__))
     else:
         throw(TypeError)
     key = get_codeobject_id(codeobject)
@@ -250,7 +249,7 @@ class Decompiler(object):
             arg = pop()
             key = pop().value
             args.append(ast.Keyword(key, arg))
-        for i in xrange(posarg):
+        for _ in xrange(posarg):
             args.append(pop())
         args.reverse()
         return decompiler._call_function(args, star, star2)
@@ -309,7 +308,7 @@ class Decompiler(object):
                 assert isinstance(k, ast.Const)
                 k = k.value # ast.Name(k.value)
                 args.append(ast.Keyword(k, v))
-        for i in range(argc):
+        for _ in range(argc):
             args.append(pop())
         args.reverse()
         method = pop()
@@ -445,9 +444,8 @@ class Decompiler(object):
 
     def MAKE_FUNCTION(decompiler, argc):
         if sys.version_info >= (3, 6):
-            if argc:
-                if argc != 0x08:
-                    throw(NotImplementedError, argc)
+            if argc and argc != 0x08:
+                throw(NotImplementedError, argc)
             decompiler.stack.pop()
             tos = decompiler.stack.pop()
             if (argc & 0x08):
@@ -583,9 +581,7 @@ class Decompiler(object):
                 top = decompiler.stack.pop()
                 assert isinstance(top, ast.GenExprFor)
                 top.ifs.append(cond)
-                fors.append(top)
-            else:
-                fors.append(top)
+            fors.append(top)
         fors.reverse()
         decompiler.stack.append(
             ast.GenExpr(ast.GenExprInner(simplify(expr), fors)))

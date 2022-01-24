@@ -53,10 +53,7 @@ class PostgresSQLSQLASTTranslator(MySQLSQLASTTranslator):
             else:
                 f_type = 'BIGINT'
         elif type_ in (str, unicode):
-            if length is not None:
-                f_type = 'VARCHAR({})'.format(length)
-            else:
-                f_type = 'TEXT'  # pragma: no cover
+            f_type = 'VARCHAR({})'.format(length) if length is not None else 'TEXT'
         elif type_ is float:
             f_type = 'FLOAT'  # pragma: no cover
         elif type_ is Decimal:
@@ -123,10 +120,7 @@ class PostgresSQLSQLASTTranslator(MySQLSQLASTTranslator):
         sql, params = super().post_COLUMN(table_name, field_name)
         if type_:
             if type_ != 'text':
-                if path:
-                    sql = f'({sql} #>> %s)::{type_}'
-                else:
-                    sql = f'({sql})::{type_}'
+                sql = f'({sql} #>> %s)::{type_}' if path else f'({sql})::{type_}'
             elif path:
                 sql = f'({sql} #>> %s)'
         elif path:

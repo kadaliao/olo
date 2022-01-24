@@ -64,8 +64,7 @@ class FuncTranslator(PythonTranslator):
         return node.code.src
 
     def postLambda(self, node):
-        src = 'lambda %s: %s' % (','.join(node.argnames), node.code.src)
-        return src
+        return 'lambda %s: %s' % (','.join(node.argnames), node.code.src)
 
     def postCallFunc(translator, node):
         node.priority = 2

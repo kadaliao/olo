@@ -20,8 +20,7 @@ class QueryTranslator(PythonTranslator):
         return src
 
     def postLambda(self, node):
-        src = 'lambda %s: %s' % (','.join(node.argnames), node.code.src)
-        return src
+        return 'lambda %s: %s' % (','.join(node.argnames), node.code.src)
 
 
 def ast2src(tree):
